@@ -10,7 +10,7 @@ export default function SuccessfulRegisterPage() {
           You have successfully created an account. Please log using the newly
           created credentials
         </p>
-        <a href="/login"><button className="btn btn-accent px-10 text-lg mt-8">Login</button></a>
+        <a href="/"><button className="btn btn-accent px-10 text-lg mt-8">Login</button></a>
       </div>
     </div>
   );

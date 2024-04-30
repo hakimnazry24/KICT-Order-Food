@@ -1,15 +1,29 @@
 const express = require("express");
-const app = express();
 const sqlite3 = require("sqlite3");
-const db = new sqlite3.Database("./database.db");
-var cors = require("cors");
-require("dotenv").config();
-app.use(express.json());
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
+var cors = require("cors");
+const app = express();
+const db = new sqlite3.Database("./database.db");
+
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: "*" }));
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.header["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.status(401);
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.status(403);
+    req.user = user;
+    next();
+  });
+}
 
 db.serialize(() => {
   // db.run(`CREATE TABLE IF NOT EXISTS Student (
@@ -63,11 +77,6 @@ app.post("/api/register", (req, res) => {
           res.status(500).send({ error: "cannot create new user", err });
           return;
         }
-        console.log(fullName);
-        console.log(password[0]);
-        console.log(phoneNumber);
-        console.log(matricNo);
-
         console.log(`Successfully creating user ${fullName} ${matricNo}`);
         res.status(200).redirect(`http://localhost:5173/successful-register`);
       }
@@ -85,15 +94,16 @@ app.post("/api/login", (req, res) => {
         res.status(500).send({ error: "Something went wrong on the server" });
         return;
       }
-      console.log(user);
-
+      
       user = row;
-
+      
       if (!user) {
         return res.status(404).redirect("http://localhost:5173/");
       } else {
         bcrypt.compare(password, user.password, (err, result) => {
           if (result == true) {
+            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+            res.cookie("token", accessToken);
             return res.status(200).redirect("http://localhost:5173/home");
           } else {
             return res.status(400).redirect("http://localhost:5173/");
@@ -108,6 +118,8 @@ app.post("/api/login", (req, res) => {
     });
   }
 });
+
+app.get("/api/checkout", authenticateToken, (req, res) => {});
 
 app.get("/api/items", (req, res) => {
   db.all("SELECT * FROM Item", [], (err, rows) => {

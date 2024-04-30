@@ -24,14 +24,19 @@ export default function App() {
     setShowAlert(true);
   } */
 
+  const excludedPaths = [
+    "/",
+    "/successful-register",
+    "/admin-panel",
+    "/administrator",
+    "/logout",
+  ];
   return (
     <div>
       <BrowserRouter>
-        {location.pathname !== "/successful-register" &&
-          location.pathname !== "/admin-panel" &&
-          location.pathname !== "/administrator" &&
-          location.pathname !== "/login" &&
-          location.pathname !== "/logout" && <Navbar sum={10} totalItem={10} />}
+        {!excludedPaths.includes(location.pathname) && (
+          <Navbar sum={10} totalItem={10} />
+        )}
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/home" element={<HomePage />} />

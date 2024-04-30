@@ -29,11 +29,23 @@ export default function LoginPage() {
             <button className="btn btn-primary">Log in</button>
           </div>
           <div className="flex justify-center text-slate-500 mt-3">
-            Do not have an account? &#160;<span><a href="/register" className="underline text-slate-400 hover:opacity-80">Register here</a></span>
+            Do not have an account? &#160;
+            <span>
+              <a
+                href="/register"
+                className="underline text-slate-400 hover:opacity-80"
+              >
+                Register here
+              </a>
+            </span>
           </div>
         </form>
         <div className="flex justify-center">
-          <a href="/"><button className="btn btn-danger bg-red-600 mt-10">Bypass login</button></a>
+          <a href="/home">
+            <button className="btn btn-danger bg-red-600 mt-10">
+              Bypass login
+            </button>
+          </a>
         </div>
       </div>
     </div>
