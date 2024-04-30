@@ -16,8 +16,10 @@ app.use(cors({ origin: "*" }));
 function authenticateToken(req, res, next) {
   const authHeader = req.header["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.status(401);
-
+  console.log(authHeader);
+  if (token === null && token === undefined) {
+    return res.status(401).redirect("http://localhost:5173/");
+  }
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) return res.status(403);
     req.user = user;
@@ -87,6 +89,10 @@ app.post("/api/register", (req, res) => {
 app.post("/api/login", (req, res) => {
   const { matricNo, password } = req.body;
 
+  if (!matricNo && !password) {
+    return res.status(400).redirect("http://localhost:5173/");
+  }
+
   try {
     let user;
     db.get("SELECT * FROM User WHERE matricNo = ?", [matricNo], (err, row) => {
@@ -94,16 +100,22 @@ app.post("/api/login", (req, res) => {
         res.status(500).send({ error: "Something went wrong on the server" });
         return;
       }
-      
+
       user = row;
-      
+
       if (!user) {
         return res.status(404).redirect("http://localhost:5173/");
       } else {
         bcrypt.compare(password, user.password, (err, result) => {
           if (result == true) {
             const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
-            res.cookie("token", accessToken);
+
+            // set expires to 15 minutes
+            res.cookie("token", accessToken, {
+              expires: new Date(Date.now() + 900000),
+            });
+            res.cookie("matricNo", user.matricNo);
+            res.cookie("fullName", user.fullName);
             return res.status(200).redirect("http://localhost:5173/home");
           } else {
             return res.status(400).redirect("http://localhost:5173/");
@@ -112,7 +124,7 @@ app.post("/api/login", (req, res) => {
       }
     });
   } catch (err) {
-    res.status(400).send({
+    return res.status(400).send({
       message: "An error occured",
       error: error.message,
     });

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function SuccessfulRegisterPage() {
   return (
     <div
@@ -10,7 +12,7 @@ export default function SuccessfulRegisterPage() {
           You have successfully created an account. Please log using the newly
           created credentials
         </p>
-        <a href="/"><button className="btn btn-accent px-10 text-lg mt-8">Login</button></a>
+      <Link to={"/"}><button className="btn btn-accent px-10 text-lg mt-8">Login</button></Link>
       </div>
     </div>
   );
